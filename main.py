@@ -5,6 +5,7 @@ import asyncio
 import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel
 import httpx
 import urllib.parse
 
@@ -21,11 +22,13 @@ url_api_map = {
     "other": config["other"],
 }
 
+class Message(BaseModel):
+    message: str
 
 @app.post("/download")
-async def download_video(request: Request, message: str):
+async def download_video(request: Request, message: Message):
     """专门用于下载视频的端点，直接返回文件流"""
-    url_list = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message)
+    url_list = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message.message)
     
     if not url_list:
         return JSONResponse({"error": "Invalid URL"}, status_code=400)
